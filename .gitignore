@@ -1,0 +1,6 @@
+.idea
+/out
+/roster
+*.jar
+*.iml
+*.txt
