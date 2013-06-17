@@ -1,8 +1,5 @@
 package leaguemon;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,11 +21,17 @@ public class LeagueMonitor {
     private String rosterImageDir;
     private String teamsDir;
 
-    public LeagueMonitor() throws IOException {
+    public LeagueMonitor() {
         loadConfig();
 
         System.out.print("Reading team info from file(s)...");
-        teams = loadTeamInfo();
+        try {
+            teams = loadTeamInfo();
+        } catch (IOException e) {
+            System.out.print("Unable to load team info.");
+            e.printStackTrace();
+            System.exit(-1);
+        }
         System.out.println(" Done");
         System.out.println();
     }
@@ -78,32 +81,11 @@ public class LeagueMonitor {
         return players;
     }
 
-    public void start(int interval) throws IOException, InterruptedException {
+    public void start(int interval) throws InterruptedException {
         while (true) {
-            boolean changed = false;
-
             for (Team team : teams) {
                 System.out.println("Checking team " + team.getName() + "...");
-
-                for (Player player : team.getPlayers()) {
-                    System.out.print("Checking " + player.getName() + " ...");
-                    Player.League currentLeague = getCurrentLeague(player.getProfile());
-
-                    if(!currentLeague.equals(player.getLeague())) {
-                        System.out.print(" Updating ...");
-                        player.setLeague(currentLeague);
-                        changed = true;
-                    }
-
-                    System.out.println(" Done");
-                }
-
-                if(changed) {
-                    team.sortRoster();
-                    team.writeRosterTextFile(teamsDir);
-                    team.writeRosterImageFile(rosterImageDir);
-                }
-
+                checkTeam(team);
                 System.out.println();
             }
 
@@ -114,19 +96,34 @@ public class LeagueMonitor {
         }
     }
 
-    private Player.League getCurrentLeague(String address) throws IOException {
-        Document doc = Jsoup.connect(address).get();
+    private void checkTeam(Team team) {
+        boolean changed = false;
 
-        String portraitFrameClass = doc.getElementById("portrait-frame").className();
+        for (Player player : team.getPlayers()) {
+            System.out.print("Checking " + player.getName() + " ...");
+            Player.League currentLeague = player.getLeague();
+            player.updateLeagueFromBnetProfile();
 
-        if(portraitFrameClass.isEmpty()) {
-            return Player.League.NONE;
+            if(!currentLeague.equals(player.getLeague())) {
+                System.out.print(" Updated ...");
+                changed = true;
+            }
+
+            System.out.println(" Done");
         }
 
-        int lastDash = portraitFrameClass.lastIndexOf('-');
-        String league = portraitFrameClass.substring(lastDash + 1);
+        if(changed) {
+            updateRosterFiles(team);
+        }
+    }
 
-        return Player.League.valueOf(league.toUpperCase());
+    private void updateRosterFiles(Team team) {
+        team.sortRoster();
+        team.writeRosterTextFile(teamsDir);
+
+        System.out.print("Writing roster to: " + rosterImageDir + team.getName() + LeagueMonitor.IMG_EXTENSION + " ...");
+        team.writeRosterImageFile(rosterImageDir);
+        System.out.println(" Done");
     }
 
     // main ///////////////////////////////////////////////////////
@@ -138,9 +135,7 @@ public class LeagueMonitor {
         }
 
         try {
-            new leaguemon.LeagueMonitor().start(Integer.parseInt(args[0]));
-        } catch (IOException e) {
-            e.printStackTrace();
+            new LeagueMonitor().start(Integer.parseInt(args[0]));
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

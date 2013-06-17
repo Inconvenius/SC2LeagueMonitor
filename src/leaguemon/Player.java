@@ -1,5 +1,10 @@
 package leaguemon;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+
+import java.io.IOException;
+
 /**
  *
  * @author Inconvenius
@@ -42,6 +47,29 @@ public class Player implements Comparable<Player> {
         return temp.substring(lastSlash + 1);
     }
 
+    public void updateLeagueFromBnetProfile() {
+        Document doc;
+
+        try {
+            doc = Jsoup.connect(getProfile()).get();
+        } catch (IOException e) {
+            System.out.println("Unable to access profile for player " + getName());
+            e.printStackTrace();
+            return;
+        }
+
+        String portraitFrameClass = doc.getElementById("portrait-frame").className();
+
+        if(portraitFrameClass.isEmpty()) {
+            setLeague(League.NONE);
+        } else {
+            int lastDash = portraitFrameClass.lastIndexOf('-');
+            String league = portraitFrameClass.substring(lastDash + 1);
+
+            setLeague(League.valueOf(league.toUpperCase()));
+        }
+    }
+
     public String getName() {
         return name;
     }
@@ -62,7 +90,7 @@ public class Player implements Comparable<Player> {
         return league;
     }
 
-    public void setLeague(League league) {
+    private void setLeague(League league) {
         this.league = league;
     }
 

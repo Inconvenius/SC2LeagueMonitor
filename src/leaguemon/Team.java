@@ -68,9 +68,7 @@ public class Team {
      */
     public void writeRosterImageFile(String dir) {
         try {
-            System.out.print("Writing roster to: " + dir + getName() + LeagueMonitor.IMG_EXTENSION + " ...");
             new RosterImage(players).writeImage(dir + getName() + LeagueMonitor.IMG_EXTENSION);
-            System.out.println(" Done");
         } catch (IOException e) {
             System.out.println("Error writing roster image for team " + getName());
             e.printStackTrace();
