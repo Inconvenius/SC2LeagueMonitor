@@ -59,13 +59,14 @@ public class LeagueMonitor {
             for (Player player : players) {
                 System.out.print("Checking " + player.getName() + " ...");
                 Player.League currentLeague = getCurrentLeague(player.getProfile());
-                System.out.println(" Done");
 
                 if(!currentLeague.equals(player.getLeague())) {
+                    System.out.print("Updating ...");
                     player.setLeague(currentLeague);
-                    updateImage(player);
                     changed = true;
                 }
+
+                System.out.println(" Done");
             }
 
             if(changed) {
@@ -110,20 +111,6 @@ public class LeagueMonitor {
 
             out.flush();
             out.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void updateImage(Player player) {
-        Path source = Paths.get(IMG_DIR + LEAGUE_IMG_DIR + player.getLeague().toString().toLowerCase() + IMG_EXTENSION);
-        Path target = Paths.get(imagesDir + player.getName() + IMG_EXTENSION);
-
-        System.out.println("Updating form: " + source);
-        System.out.println("Updating to: " + target);
-
-        try {
-            Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             e.printStackTrace();
         }
