@@ -1,12 +1,10 @@
 package leaguemon;
 
-import leaguemon.graphics.RosterImage;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -17,23 +15,22 @@ import java.util.Properties;
 public class LeagueMonitor {
 
     public static final String IMG_EXTENSION = ".png";
-    public static final String LEAGUES_FILE = "leagues.txt";
 
     public static String badgeImagesDir;
     public static String raceImagesDir;
 
-    private List<Player> players = new ArrayList<Player>();
+    private List<Team> teams = new ArrayList<Team>();
 
     private String rosterImageDir;
-    private String workingDir;
+    private String teamsDir;
 
     public LeagueMonitor() throws IOException {
         loadConfig();
-        this.workingDir = System.getProperty("user.dir");
 
-        System.out.print("Reading player info from file...");
-        players = readPlayerInfo();
+        System.out.print("Reading team info from file(s)...");
+        teams = loadTeamInfo();
         System.out.println(" Done");
+        System.out.println();
     }
 
     private void loadConfig() {
@@ -45,6 +42,7 @@ public class LeagueMonitor {
             rosterImageDir = p.getProperty("rosterImageDir");
             badgeImagesDir = p.getProperty("leagueBadgeImagesDir");
             raceImagesDir = p.getProperty("raceImagesDir");
+            teamsDir = p.getProperty("teamsDir");
 
         } catch (IOException e) {
             System.out.println("Error loading configurations from config.properties file.");
@@ -53,10 +51,24 @@ public class LeagueMonitor {
         }
     }
 
-    public static ArrayList<Player> readPlayerInfo() throws IOException {
+    private ArrayList<Team> loadTeamInfo() throws IOException {
+        File dir = new File(teamsDir);
+        ArrayList<Team> teams = new ArrayList<Team>();
+
+        for (File child : dir.listFiles()) {
+            int suffixStart = child.getName().lastIndexOf('.');
+            Team team = new Team(child.getName().substring(0, suffixStart));
+            team.setPlayers(loadPlayerInfo(child));
+            teams.add(team);
+        }
+
+        return teams;
+    }
+
+    private ArrayList<Player> loadPlayerInfo(File playersFile) throws IOException {
         ArrayList<Player> players = new ArrayList<Player>();
 
-        BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/" + LEAGUES_FILE));
+        BufferedReader br = new BufferedReader(new FileReader(playersFile));
         String line;
 
         while ((line = br.readLine()) != null) {
@@ -70,23 +82,29 @@ public class LeagueMonitor {
         while (true) {
             boolean changed = false;
 
-            for (Player player : players) {
-                System.out.print("Checking " + player.getName() + " ...");
-                Player.League currentLeague = getCurrentLeague(player.getProfile());
+            for (Team team : teams) {
+                System.out.println("Checking team " + team.getName() + "...");
 
-                if(!currentLeague.equals(player.getLeague())) {
-                    System.out.print("Updating ...");
-                    player.setLeague(currentLeague);
-                    changed = true;
+                for (Player player : team.getPlayers()) {
+                    System.out.print("Checking " + player.getName() + " ...");
+                    Player.League currentLeague = getCurrentLeague(player.getProfile());
+
+                    if(!currentLeague.equals(player.getLeague())) {
+                        System.out.print(" Updating ...");
+                        player.setLeague(currentLeague);
+                        changed = true;
+                    }
+
+                    System.out.println(" Done");
                 }
 
-                System.out.println(" Done");
-            }
+                if(changed) {
+                    team.sortRoster();
+                    team.writeRosterTextFile(teamsDir);
+                    team.writeRosterImageFile(rosterImageDir);
+                }
 
-            if(changed) {
-                sortRoster();
-                updateRoster();
-                writeFile();
+                System.out.println();
             }
 
             if(interval <= 0)
@@ -110,41 +128,6 @@ public class LeagueMonitor {
 
         return Player.League.valueOf(league.toUpperCase());
     }
-
-    /**
-     * Updates the leagues file with the most recent info.
-     */
-    private void writeFile() {
-        try {
-            BufferedWriter out = new BufferedWriter(new FileWriter(workingDir + "/" + LEAGUES_FILE));
-
-            for (Player player : players) {
-                out.write(player.getProfile() + " " + player.getLeague() + " "
-                        + player.getRace() + " " + player.getPosition() + "\n");
-            }
-
-            out.flush();
-            out.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void updateRoster() {
-        try {
-            System.out.println("Writing roster to:" + rosterImageDir + "carrier.png");
-            new RosterImage(players).writeImage(rosterImageDir + "carrier.png");
-            System.out.println(" Done");
-        } catch (IOException e) {
-            System.out.println("Error writing roster image.");
-            e.printStackTrace();
-        }
-    }
-
-    private void sortRoster() {
-        Collections.sort(players);
-    }
-
 
     // main ///////////////////////////////////////////////////////
 
