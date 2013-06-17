@@ -5,13 +5,10 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 
 /**
  *
@@ -20,23 +17,40 @@ import java.util.List;
 public class LeagueMonitor {
 
     public static final String IMG_EXTENSION = ".png";
-    public static final String IMG_DIR = "img/";
     public static final String LEAGUES_FILE = "leagues.txt";
-    public static final String RACE_IMG_DIR = "races/";
-    public static final String LEAGUE_IMG_DIR = "leagues/";
+
+    public static String badgeImagesDir;
+    public static String raceImagesDir;
 
     private List<Player> players = new ArrayList<Player>();
 
-    private String imagesDir;
+    private String rosterImageDir;
     private String workingDir;
 
-    public LeagueMonitor(String imagesDir) throws IOException {
-        this.imagesDir = imagesDir;
+    public LeagueMonitor() throws IOException {
+        loadConfig();
         this.workingDir = System.getProperty("user.dir");
 
         System.out.print("Reading player info from file...");
         players = readPlayerInfo();
         System.out.println(" Done");
+    }
+
+    private void loadConfig() {
+        Properties p = new Properties();
+
+        try {
+            p.load(new FileInputStream("config.properties"));
+
+            rosterImageDir = p.getProperty("rosterImageDir");
+            badgeImagesDir = p.getProperty("leagueBadgeImagesDir");
+            raceImagesDir = p.getProperty("raceImagesDir");
+
+        } catch (IOException e) {
+            System.out.println("Error loading configurations from config.properties file.");
+            e.printStackTrace();
+            System.exit(-1);
+        }
     }
 
     public static ArrayList<Player> readPlayerInfo() throws IOException {
@@ -118,8 +132,8 @@ public class LeagueMonitor {
 
     private void updateRoster() {
         try {
-            System.out.println("Writing roster to:" + imagesDir + "carrier.png");
-            new RosterImage(players).writeImage(imagesDir + "carrier.png");
+            System.out.println("Writing roster to:" + rosterImageDir + "carrier.png");
+            new RosterImage(players).writeImage(rosterImageDir + "carrier.png");
             System.out.println(" Done");
         } catch (IOException e) {
             System.out.println("Error writing roster image.");
@@ -135,13 +149,13 @@ public class LeagueMonitor {
     // main ///////////////////////////////////////////////////////
 
     public static void main(String[] args) {
-        if(args.length != 2) {
-            System.out.println("Usage: monitor <img_dir> <interval>");
+        if(args.length != 1) {
+            System.out.println("Usage: monitor <interval>");
             return;
         }
 
         try {
-            new leaguemon.LeagueMonitor(args[0]).start(Integer.parseInt(args[1]));
+            new leaguemon.LeagueMonitor().start(Integer.parseInt(args[0]));
         } catch (IOException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {

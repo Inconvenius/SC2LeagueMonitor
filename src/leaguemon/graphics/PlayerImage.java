@@ -24,8 +24,8 @@ public class PlayerImage extends BufferedImage {
         this.player = player;
 
         try {
-            league = ImageIO.read(new File(LeagueMonitor.IMG_DIR + LeagueMonitor.LEAGUE_IMG_DIR + player.getLeague().toString().toLowerCase() + LeagueMonitor.IMG_EXTENSION));
-            race = ImageIO.read(new File(LeagueMonitor.IMG_DIR + LeagueMonitor.RACE_IMG_DIR + player.getRace().toString().toLowerCase() + LeagueMonitor.IMG_EXTENSION));
+            league = ImageIO.read(new File(LeagueMonitor.badgeImagesDir + player.getLeague().toString().toLowerCase() + LeagueMonitor.IMG_EXTENSION));
+            race = ImageIO.read(new File(LeagueMonitor.raceImagesDir + player.getRace().toString().toLowerCase() + LeagueMonitor.IMG_EXTENSION));
         } catch (IOException e) {
             e.printStackTrace();
         }
