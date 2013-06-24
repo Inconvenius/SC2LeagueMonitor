@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Properties;
 
 /**
+ * The <code>LeagueMonitor</code> class represents the league monitor that will generate rosters for players using
+ * the current league information from their battle.net profiles.
  *
  * @author Inconvenius
  */
@@ -13,7 +15,10 @@ public class LeagueMonitor {
 
     public static final String IMG_EXTENSION = ".png";
 
+    /** A directory containing the images for league badges */
     public static String badgeImagesDir;
+
+    /** A directory containing the images for the races */
     public static String raceImagesDir;
 
     private List<Team> teams = new ArrayList<Team>();
@@ -21,6 +26,10 @@ public class LeagueMonitor {
     private String rosterImageDir;
     private String teamsDir;
 
+    /**
+     * Class constructor. Loads the configurations from config.properties file
+     * and data from the player lists.
+     */
     public LeagueMonitor() {
         loadConfig();
 
@@ -36,6 +45,9 @@ public class LeagueMonitor {
         System.out.println();
     }
 
+    /**
+     * Loads configuration info from the config.properties file.
+     */
     private void loadConfig() {
         Properties p = new Properties();
 
@@ -54,6 +66,13 @@ public class LeagueMonitor {
         }
     }
 
+    /**
+     * Loads the team info from the directory containing the files specifying the
+     * player lists. This directory is specified in the config.properties file.
+     *
+     * @return a list of the teams
+     * @throws IOException if there is a problem reading the files
+     */
     private ArrayList<Team> loadTeamInfo() throws IOException {
         File dir = new File(teamsDir);
         ArrayList<Team> teams = new ArrayList<Team>();
@@ -68,6 +87,13 @@ public class LeagueMonitor {
         return teams;
     }
 
+    /**
+     * Loads the players' info from a single file.
+     *
+     * @param playersFile a file containing a list of players
+     * @return a list of players that were in the specified file
+     * @throws IOException if there is a problem reading the file
+     */
     private ArrayList<Player> loadPlayerInfo(File playersFile) throws IOException {
         ArrayList<Player> players = new ArrayList<Player>();
 
@@ -81,6 +107,12 @@ public class LeagueMonitor {
         return players;
     }
 
+    /**
+     * Starts the monitor with the specified interval.
+     *
+     * @param interval the time in minutes to wait between each check
+     * @throws InterruptedException if the thread gets interrupted
+     */
     public void start(int interval) throws InterruptedException {
         while (true) {
             for (Team team : teams) {
@@ -96,6 +128,12 @@ public class LeagueMonitor {
         }
     }
 
+    /**
+     * For each player in the specified team checks if that player's league has changed since
+     * last time, and updates it if it has.
+     *
+     * @param team the team whose players to check
+     */
     private void checkTeam(Team team) {
         boolean changed = false;
 
@@ -117,6 +155,11 @@ public class LeagueMonitor {
         }
     }
 
+    /**
+     * Updates the roster image and text files with the most recent info for the specified team.
+     *
+     * @param team the team whose roster files to update
+     */
     private void updateRosterFiles(Team team) {
         team.sortRoster();
         team.writeRosterTextFile(teamsDir);

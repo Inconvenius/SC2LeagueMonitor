@@ -6,19 +6,24 @@ import org.jsoup.nodes.Document;
 import java.io.IOException;
 
 /**
+ * The <code>Player</code> class represents a player with a name, race, league, team position and a bnet profile.
+ * It provides methods for accessing these properties and querying the league from the bnet profile.
  *
  * @author Inconvenius
  */
 public class Player implements Comparable<Player> {
 
+    /** Specifies the possible leagues a player can be in. */
     public enum League {
         NONE, BRONZE, SILVER, GOLD, PLATINUM, DIAMOND, MASTER, GRANDMASTER
     }
 
+    /** Specifies the possible races a player can play as. */
     public enum Race {
         TERRAN, PROTOSS, ZERG, RANDOM
     }
 
+    /** Specifies the possible positions a player can hold in a team. */
     public enum Position {
         NONE, TA, TL, DM
     }
@@ -29,6 +34,11 @@ public class Player implements Comparable<Player> {
     private Race race;
     private Position position;
 
+    /**
+     * Constructs a player object according to a line from the roster file.
+     *
+     * @param player an entry in the team roster file
+     */
     public Player(String player) {
         String[] split = player.split(" ");
 
@@ -40,6 +50,12 @@ public class Player implements Comparable<Player> {
         this.name = extractName(profile);
     }
 
+    /**
+     * Extracts a player's name from its bnet profile address.
+     *
+     * @param profile address to extract the name from
+     * @return the name of the player with the specified bnet profile address
+     */
     public static String extractName(String profile) {
         String temp = profile.substring(0, profile.length() - 1);
         int lastSlash = temp.lastIndexOf('/');
@@ -47,6 +63,9 @@ public class Player implements Comparable<Player> {
         return temp.substring(lastSlash + 1);
     }
 
+    /**
+     * Retrieves the current league of this player from its bnet profile.
+     */
     public void updateLeagueFromBnetProfile() {
         Document doc;
 

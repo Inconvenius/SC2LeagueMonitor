@@ -10,6 +10,8 @@ import java.io.File;
 import java.io.IOException;
 
 /**
+ * The <code>PlayerImage</code> class represents an image with one player's
+ * league, race, name and position in a team.
  *
  * @author Inconvenius
  */
@@ -19,8 +21,16 @@ public class PlayerImage extends BufferedImage {
     private BufferedImage league;
     private BufferedImage race;
 
+    public static final int WIDTH = 200;
+    public static final int HEIGHT = 33;
+
+    /**
+     * Class constructor specifying a player to draw the image for
+     *
+     * @param player the player whose information will be used to draw the image
+     */
     public PlayerImage(Player player) {
-        super(200, 33, BufferedImage.TYPE_INT_ARGB);
+        super(WIDTH, HEIGHT, BufferedImage.TYPE_INT_ARGB);
         this.player = player;
 
         try {
@@ -33,11 +43,15 @@ public class PlayerImage extends BufferedImage {
         draw();
     }
 
+    /**
+     * Draws this image.
+     */
     public void draw() {
         Graphics2D g2d = (Graphics2D) getGraphics();
+
         int gray = 30;
         g2d.setColor(new Color(gray,gray,gray));
-        g2d.fillRect(0, 0, 200, 33);
+        g2d.fillRect(0, 0, WIDTH, HEIGHT);
         g2d.setColor(Color.WHITE);
 
         g2d.drawImage(league, 0, 0, null);

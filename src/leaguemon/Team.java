@@ -10,10 +10,18 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * The <code>Team</code> class represents a named team with a list of players. It provides methods
+ * for sorting the players (according to bnet rank and position in the team) and writing the player list
+ * to a text and image file.
+ *
  * @author Inconvenius
  */
 public class Team {
+
+    /** List of players in this team */
     private List<Player> players = new ArrayList<Player>();
+
+    /** Name of the team */
     private final String name;
 
     public Team(String name) {
@@ -33,16 +41,16 @@ public class Team {
     }
 
     /**
-     * Sorts the roster of this team according to position and league.
+     * Sorts the roster of this team according to position in the team and league.
      */
     public void sortRoster() {
         Collections.sort(players);
     }
 
     /**
-     * Updates the roster file with the most recent info to the specified directory.
+     * Writes the roster file with the most recent info to the specified directory.
      *
-     * @param dir directory to write the roster to
+     * @param dir directory to write the text file to
      */
     public void writeRosterTextFile(String dir) {
         try {
@@ -62,7 +70,7 @@ public class Team {
     }
 
     /**
-     * Updates the roster image with the current lineup.
+     * Writes the roster image with the most recent info to the specified directory.
      *
      * @param dir directory to write the image to
      */
